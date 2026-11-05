@@ -1,0 +1,29 @@
+# Clúster RabbitMQ de 2 nodos (rabbit1 y rabbit2).
+# Uso:  cp .env.example .env   (editar valores)   y luego   docker compose up -d
+x-rabbit: &rabbit
+  image: rabbitmq:3.13-management
+  restart: unless-stopped
+  environment:
+    RABBITMQ_ERLANG_COOKIE: ${RABBIT_COOKIE}
+    RABBITMQ_DEFAULT_USER: ${RABBIT_USER}
+    RABBITMQ_DEFAULT_PASS: ${RABBIT_PASS}
+  volumes:
+    - ./rabbitmq.conf:/etc/rabbitmq/conf.d/20-cluster.conf:ro
+
+services:
+  rabbit1:
+    <<: *rabbit
+    container_name: rabbit1
+    hostname: rabbit1
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+  rabbit2:
+    <<: *rabbit
+    container_name: rabbit2
+    hostname: rabbit2
+    depends_on:
+      - rabbit1
+    ports:
+      - '5673:5672'
+      - '15673:15672'

@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: pedidos360-mensajeria
+  rabbitmq:
+    # Ambos nodos del clúster: si uno cae, el cliente usa el otro.
+    addresses: ${RABBIT_ADDRESSES:localhost:5672,localhost:5673}
+    username: ${RABBIT_USER:guest}
+    password: ${RABBIT_PASS:guest}
+    listener:
+      simple:
+        acknowledge-mode: manual        # ACK/NACK explícito en cada consumidor
+        default-requeue-rejected: false # un rechazo va a la DLQ, no vuelve a la cola
+        prefetch: 10
+
+server:
+  port: 8083
+
+app:
+  security:
+    issuer-uri: ${COGNITO_ISSUER_URI:https://cognito-idp.us-east-1.amazonaws.com/us-east-1_pSWQKRHyI}
+    client-id: ${COGNITO_CLIENT_ID:506umnko0aikhdkunuvpmd9n45}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+# Nombres de exchanges, colas, DLQs y claves de ruteo. Es el ÚNICO lugar donde se escriben:
+# el código los lee desde RabbitProperties. Este bloque debe ser idéntico en pedidos,
+# productos y mensajería.
+tecnomarket:
+  rabbit:
+    exchanges:
+      pedidos: tecnomarket.pedidos.direct
+      eventos: tecnomarket.eventos.topic
+      dlx: tecnomarket.dlx
+    queues:
+      stock: q.stock
+      ticket: q.ticket
+      notificaciones: q.notificaciones
+    dlqs:
+      stock: q.stock.dlq
+      ticket: q.ticket.dlq
+      notificaciones: q.notificaciones.dlq
+    routing-keys:
+      stock: pedido.stock
+      ticket: pedido.ticket
+      pedido-creado: pedido.creado
+      pedido-todos: 'pedido.#'
+      producto-todos: 'producto.#'
+      producto-eliminado: producto.eliminado
+    # Errores técnicos: 3 reintentos con espera de 1 s, 2 s y 3 s; luego la DLQ.
+    reintentos:
+      maximo: 3
+      espera-ms: 1000
