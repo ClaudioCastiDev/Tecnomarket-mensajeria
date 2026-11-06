@@ -115,7 +115,7 @@ Validaciones: el nombre es obligatorio, de hasta 200 caracteres, solo letras, n√
 ## Estructura
 
 ```
-config/          RabbitProperties, RabbitTopologyConfig, RabbitMessagingConfig, seguridad Cognito
+config/          RabbitProperties, RabbitTopologyConfig, seguridad Cognito
 event/           PedidoCreadoEvent (contrato JSON compartido con pedidos)
 consumer/        ticket/TicketConsumer, notificaciones/NotificacionConsumer,
                  support/ConfirmacionManual (ACK, DLQ y reintentos comunes)
